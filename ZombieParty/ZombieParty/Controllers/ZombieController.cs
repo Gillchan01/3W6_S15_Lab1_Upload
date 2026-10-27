@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AspNetCoreHero.ToastNotification;
+using AspNetCoreHero.ToastNotification.Abstractions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ZombieParty.Models;
@@ -12,11 +14,17 @@ namespace ZombieParty.Controllers
     {
         private ZombiePartyDbContext _baseDonnees { get; set; }
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private INotyfService _notyf;
+        
+        
 
-        public ZombieController(ZombiePartyDbContext baseDonnees, IWebHostEnvironment webHostEnvironment)
+        public ZombieController(ZombiePartyDbContext baseDonnees, IWebHostEnvironment webHostEnvironment, INotyfService notyf)
         {
             _baseDonnees = baseDonnees;
             _webHostEnvironment = webHostEnvironment;
+            _notyf = notyf;
+            
+            
         }
 
         public async Task<IActionResult> Index()
@@ -137,6 +145,7 @@ namespace ZombieParty.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ZombieVM zombieVM)
         {
+            
             if (ModelState.IsValid)
             {
                 string webRootPath = _webHostEnvironment.WebRootPath; //Chemin des images de zombies
@@ -171,7 +180,9 @@ namespace ZombieParty.Controllers
                 {
                     await _baseDonnees.Zombies.AddAsync(zombieVM.Zombie);
                     await _baseDonnees.SaveChangesAsync();
+                
                     TempData[AppConstants.Success] = $"Zombie {zombieVM.Zombie.Name} added";
+                    this._notyf.Success("BRRRRRRRRRRRRRRRRRRRRRRRR");
                     return this.RedirectToAction("Index");
                 }
             zombieVM.ZombieTypeSelectList = _baseDonnees.ZombieTypes.Select(t => new SelectListItem
